@@ -112,7 +112,18 @@ Note that you must do the following:
 * put jQuery into "no conflict" mode to give the `$` function back to Prototype
 * require the `prototype.js` file
 * chain any files that are dependent on `prototype.js` in the `onload` callback
-  
+
+More Examples
+-------------
+
+To see Blue Ridge in action inside a working Rails app, check out the [Blue Ridge sample application](http://github.com/relevance/blue-ridge-sample-app).  Among other things, this sample app includes examples of:
+
+* using nested `describe` functions
+* setting up per-spec HTML "fixtures"
+* stubbing functions
+* mocking functions
+* running the Blue Ridge specs as part of your default Rake task
+
 JavaScript API
 --------------
 
@@ -198,6 +209,7 @@ But even better, fork our [GitHub repo](http://www.github.com/relevance/blue-rid
 Links
 -------------
 * [Blue Ridge JavaScript Testing Rails Plugin](http://github.com/relevance/blue-ridge)
+* [Blue Ridge Sample App](http://github.com/relevance/blue-ridge-sample-app)
 * [Justin Gehtland's "Fully Headless JSSpec" Blog Post](http://blog.thinkrelevance.com/2008/7/31/fully-headless-jsspec)
 * [Screw.Unit](http://github.com/nkallen/screw-unit)
 * [Screw.Unit Mailing List](http://groups.google.com/group/screw-unit)
