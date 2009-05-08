@@ -196,10 +196,6 @@ Tips & Tricks
 * Avoid using `print` in your tests while debugging.  It works fine from the command line but causes lots of headaches in browser.  (Just imagine a print dialog opening ten or fifteen times and then Firefox crashing.  This is a mistake I've made too many times!  Trust me!)
 * We don't recommend testing jQuery or Prototype, especially event wiring.  (You don't test Rails, do you?)  Instead write a separate function, test it, and wire it to events using jQuery or Prototype.
 
-Caveats
-----------
-env.js and jQuery 1.3.x do not currently get along well (as of 2009-04-14), so Blue Ridge currently runs command line specs using jQuery 1.2.6.  This is currently in active development, and any help is very appreciated!
-
 Bugs & Patches
 --------------
 First, if you see any bugs or possible improvements, please use the project's [GitHub issue tracker](http://github.com/relevance/blue-ridge/issues) to let us know about them.
