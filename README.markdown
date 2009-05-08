@@ -191,7 +191,7 @@ env.js and jQuery 1.3.x do not currently get along well (as of 2009-04-14), so B
 
 Bugs & Patches
 --------------
-First, if you see any bugs or possible improvements, please use the issues tracker on our [GitHub project page](http://github.com/relevance/blue-ridge) to let us know about them.
+First, if you see any bugs or possible improvements, please use the project's [GitHub issue tracker](http://github.com/relevance/blue-ridge/issues) to let us know about them.
 
 But even better, fork our [GitHub repo](http://www.github.com/relevance/blue-ridge) and start hacking!  If you have patches, send us pull requests.  Also, [env.js](http://github.com/thatcher/env-js), [Smoke](http://github.com/andykent/smoke), and [Screw.Unit](http://github.com/nkallen/screw-unit) could use your love too!
 
