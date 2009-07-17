@@ -12,6 +12,38 @@ Screw.Unit(function() {
 				m.bar();
 				m.bar();
 			});
+
+      it("should fail when an expectation is called too many times", function() {
+        var m = mock();
+        m.should_receive('bar').exactly('once');  
+        m.bar();
+        m.bar();
+        try {
+          Smoke.checkExpectations();
+          throw("exception");
+        } catch(e) {
+          Smoke.reset();
+          expect(e).to(equal, 'expected bar() to be called exactly 1 times but it got called 2 times');
+        }
+      });
+
+      it("should fail when an expectation is set and not called", function() {
+        var m = mock();
+        m.should_receive('bar').exactly('once');
+        try {
+          Smoke.checkExpectations();
+          throw("exception");
+        } catch(e) {
+          Smoke.reset();
+          expect(e).to(equal, 'expected bar() to be called exactly 1 times but it got called 0 times');
+        }
+      });
+      
+			it("should not check arguments when with_arguments is not used", function() {
+				var m = mock()
+				m.should_receive('bar').exactly('once');
+				m.bar(1);
+			});
 		
 			it("should check a minimum call count", function() {
 				var m = mock()
@@ -25,7 +57,7 @@ Screw.Unit(function() {
 				m.bar();
 				m.bar();
 			});
-		
+		  
 			it("should allow return values directly from mocks",function() {
 				var m = mock()
 				m.should_receive('bar').exactly('once').and_return('hello');
@@ -40,10 +72,15 @@ Screw.Unit(function() {
 				mockObj.should_receive('foo').with_arguments('bar',baz).and_return('foobar'); 
 				expect(mockObj.foo('bar',baz)).to(equal, 'foobar');
 			});
-			it("should return undefined if the arguments aren't matched", function() {
+      
+			it("should throw an arguments mismatched error if the arguments aren't matched", function() {
 				mockObj = mock()
 				mockObj.should_receive('foo').with_arguments('bar').and_return('foobar'); 
-				expect(mockObj.foo('chicken')).to(equal, undefined);
+				try { 
+				  mockObj.foo('chicken'); 
+				} catch(e) {  
+				  expect(e).to(equal, 'expected foo with ("bar") but received it with ("chicken")')
+				}
 			});
 			it("should allow mocking multiple method signatures with different returns", function() {
 				mockObj = mock()
@@ -59,7 +96,7 @@ Screw.Unit(function() {
 			});
 		});
 		
-		describe("added ontop of an existing object", function() {
+		describe("added on top of an existing object", function() {
 			before(function() {
 				obj = { say: "hello", shout: function() { return this.say.toUpperCase(); } }
 				mockObj = mock(obj);
@@ -84,11 +121,143 @@ Screw.Unit(function() {
 				expect(mockObj.length).to(equal,4);
 			});
 			
-			it("should place expectations on existing methods non-destructively", function() {
-				myMock = mock({ say: "hello", shout: function() { return this.say.toUpperCase(); } });
+			it("should place expectations on existing methods destructively", function() {
+				myMock = mock({ say: "hello", shout: function() { throw "FAIL!" } });
 				myMock.should_receive('shout').exactly('once');
-				expect(myMock.shout()).to(equal,'HELLO');
+				myMock.shout();
 			});
+		});
+		
+		describe("proper teardown of mocks on global variables", function(){
+			var SomeGlobal = { say: "hello", shout: function() { return this.say.toUpperCase(); } };
+			
+			it("when mocked in one test...", function(){
+				mock(SomeGlobal).should_receive("shout").and_return("some string");
+				expect(SomeGlobal.shout()).to(equal, "some string");
+			});
+			
+			it("should not affect a later test", function(){
+				expect(SomeGlobal.shout()).to(equal, "HELLO");
+			});
+		});
+		
+		describe("reseting mocks", function(){
+			it("should remove all mocking data from an object", function(){
+				var obj = { say: "hello", shout: function() { return this.say.toUpperCase(); } };
+				mock(obj).should_receive("shout").and_return("some string");
+				
+				expect(obj._valuesBeforeMocking).to_not(equal, null);
+				expect(obj._expectations).to_not(equal, null);
+				expect(obj.stub).to_not(equal, null);
+				expect(obj.should_receive).to_not(equal, null);
+				expect(obj._checkExpectations).to_not(equal, null);
+				expect(obj._resetMocks).to_not(equal, null);
+				
+				obj._resetMocks();
+				Smoke.mocks = [];
+				
+				expect(obj._valuesBeforeMocking).to(equal, null);
+				expect(obj._expectations).to(equal, null);
+				expect(obj.stub).to(equal, null);
+				expect(obj.should_receive).to(equal, null);
+				expect(obj._checkExpectations).to(equal, null);
+				expect(obj._resetMocks).to(equal, null);
+			});
+			
+			it("should replace the original functionality to the object", function(){
+				var obj = { say: "hello", shout: function() { return this.say.toUpperCase(); } };
+				mock(obj).should_receive("shout").and_return("some string");
+				expect(obj.shout()).to(equal, "some string");
+				
+				obj._resetMocks();
+				Smoke.mocks = [];
+				
+				expect(obj.shout()).to(equal, "HELLO");
+			});
+			
+		});
+		
+		describe("anonymous functions", function() {
+			before(function() {
+				foo = function() { return 'bar' };
+				mockObj = mock_function(foo);
+			});
+      
+      it("should leave the original intact", function() {
+        expect(foo()).to(equal,'bar');
+      });
+      
+      it("should still execute the mock like the original", function() {
+        expect(mockObj()).to(equal,'bar');
+      });
+      
+      it("should still execute the mock like the original with arguments", function() {
+        var a = function(x,y,z) { return x+y+z };
+        aMock = mock_function(a)
+        expect(aMock('a','b','c')).to(equal,'abc');
+      });
+      
+      it("should allow expectations to be set as usual", function() {
+        mockObj.should_receive('baz').exactly('once').and_return(1);
+        mockObj.baz()
+      });
+
+      it("should allow expectations to be set on invocations of itself", function() {
+        mockObj.should_be_invoked();
+        mockObj();
+      });
+      
+      it("should allow expectation rules to be set", function() {
+        mockObj.should_be_invoked().exactly('twice').with_arguments('a');
+        mockObj('a');
+        mockObj('a');
+      });
+
+      it("should allow a return value to be set", function() {
+        mockObj.should_be_invoked().and_return('bar');
+        expect(mockObj('foo')).to(equal, 'bar');
+      });
+      
+      it("should allow multiple return values to be set through the argument matchers", function() {
+        mockObj.should_be_invoked().with_arguments('foo').and_return('bar');
+        mockObj.should_be_invoked().with_arguments('bar').and_return('foo');
+        expect(mockObj('foo')).to(equal, 'bar');
+        expect(mockObj('bar')).to(equal, 'foo');
+      });
+      
+      it("allows passing in a name for the function as a second argument to make error messages clearer", function() {
+        mock_function(foo, 'foo').should_be_invoked().exactly('once');
+        try {
+          Smoke.checkExpectations();
+          throw("exception");
+        } catch(e) {
+          Smoke.reset();
+          expect(e).to(equal, 'expected foo() to be called exactly 1 times but it got called 0 times');
+        }
+      });
+		});
+		
+		describe("when array has been monkey-patched by js library not to be named here (grrr)", function() {
+      before(function() {
+        Array.prototype.remove = function() {
+          alert('I like monkeys!');
+        }
+      });
+      it("should not throw a type error when checking expectations", function() {
+				var m = mock()
+				m.should_receive('bar').at_least('once');
+				m.bar();
+				try {
+				  Smoke.checkExpectations();
+				} catch(e) {
+  				/* Make sure we clean up to not break the rest of the tests */
+  				delete(Array.prototype.remove);
+				  throw e;
+				}
+		  });
+		  after(function() {
+	      delete(Array.prototype.remove);
+		  });		  
 		});
 		
 		describe("an objects prototype", function() {
@@ -99,6 +268,6 @@ Screw.Unit(function() {
 				(new Aobj()).aFunction();
 				(new Aobj()).aFunction();
 			});
-		});
+		});	    
 	});
 });
