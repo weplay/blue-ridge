@@ -30,7 +30,7 @@ module BlueRidge
   end
   
   def self.find_specs_under_current_dir
-    Dir.glob("*_spec.js")
+    Dir.glob("**/*_spec.js")
   end
   
   def self.run_spec(spec_filename)
