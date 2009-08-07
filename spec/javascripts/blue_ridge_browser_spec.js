@@ -9,5 +9,19 @@ Screw.Unit(function() {
         expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal, "current_file_spec.js");
       });
     });
+    
+    describe("urlCorrection", function(){
+      it("returns an empty string if the given depth is zero", function(){
+        expect(BlueRidge.Browser.urlCorrection(0)).to(equal, "");
+      });
+
+      it("returns one directory up if the given depth is 1", function(){
+        expect(BlueRidge.Browser.urlCorrection(1)).to(equal, "../");
+      });
+
+      it("returns seven directories up if the given depth is 7", function(){
+        expect(BlueRidge.Browser.urlCorrection(7)).to(equal, "../../../../../../../");
+      });
+    });
   });
 });
