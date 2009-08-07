@@ -3,7 +3,7 @@ require("../../lib/test_runner.js");
 
 //TODO: get Smoke to where I can just stub all the assigmnents to BlueRidge.CommandLine.specFile below.
 Screw.Unit(function() {
-  describe("BlueRidge", function(){
+  describe("BlueRidge.CommandLine", function(){
     
     describe("fixtureFile", function(){
       describe("given a spec filename without a path prefix", function(){
