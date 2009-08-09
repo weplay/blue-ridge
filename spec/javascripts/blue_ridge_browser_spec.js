@@ -23,5 +23,22 @@ Screw.Unit(function() {
         expect(BlueRidge.Browser.urlCorrection(7)).to(equal, "../../../../../../../");
       });
     });
+    
+    describe("calculateDepth", function(){
+      it("returns 1 if the current file is a direct child of the 'fixtures' directory", function(){
+        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/current_file.html");
+        expect(BlueRidge.Browser.calculateDepth()).to(equal, 1);
+      });
+
+      it("returns 2 if the current file is in a subdirectory ONE level beneath the 'fixtures' directory", function(){
+        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/subdirectory/current_file.html");
+        expect(BlueRidge.Browser.calculateDepth()).to(equal, 2);
+      });
+
+      it("returns 8 if the current file is in a subdirectory SEVEN levels beneath the 'fixtures' directory", function(){
+        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/1/2/3/4/5/6/7/current_file.html");
+        expect(BlueRidge.Browser.calculateDepth()).to(equal, 8);
+      });
+    });
   });
 });
