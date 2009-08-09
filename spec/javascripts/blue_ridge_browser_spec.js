@@ -40,5 +40,66 @@ Screw.Unit(function() {
         expect(BlueRidge.Browser.calculateDepth()).to(equal, 8);
       });
     });
+
+    describe("require", function(){
+      describe("correctly alters the incoming URL based on the current file's relation to the 'fixtures' directory", function(){
+        describe("when requiring a BlueRidge dependency", function(){
+          it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("some_file.js", {system: true});
+          });
+          
+          it("prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/foo/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("some_file.js", {system: true});
+          });
+
+          it("prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("some_file.js", {system: true});
+          });
+        });
+        
+        describe("when requiring a spec dependency", function(){
+          it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("some_file.js");
+          });
+          
+          it("pops off one '../' and then prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/foo/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("../some_file.js");
+          });
+
+          it("pops off seven '../' and then prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
+            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
+            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
+            BlueRidge.Browser.require("../../../../../../../some_file.js");
+          });
+        });
+      });
+
+      // TODO: note, these tests conflict with the ones above because Smoke doesn't reset its stubs back to their "natural" values;
+      // need to improve Smoke to be more forgiving on stubbing global objects
+
+      // it("creates a script tag with an onload callback if passed an 'onload' option", function(){
+      //   var callback = function(){ alert("some callback!") };
+      //   stub(BlueRidge.Browser, "calculateDepth").and_return(0);
+      //   mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("some_url", callback).at_least(1, "time");
+      //   BlueRidge.Browser.require("some_url", {onload: callback});
+      // });
+      // 
+      // it("creates a script tag with NO onload callback if passed NOT an 'onload' option", function(){
+      //   var callback = function(){ alert("some callback!") };
+      //   stub(BlueRidge.Browser, "calculateDepth").and_return(0);
+      //   mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("some_url", null).at_least(1, "time");
+      //   BlueRidge.Browser.require("some_url");
+      // });
+    });
   });
 });
