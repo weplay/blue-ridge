@@ -4,9 +4,9 @@ require("../../lib/blue-ridge.js");
 Screw.Unit(function() {
   describe("BlueRidge.Browser", function(){
     describe("deriveSpecNameFromCurrentFile", function(){
-      it("returns the current file's basename minus the '.html' suffix and with '_spec.js' appended", function(){
-        stub(BlueRidge.Browser, 'currentFile').and_return("/some/path/to/current_file.html");
-        expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal, "current_file_spec.js");
+      it("returns the current file's patch from the fixtures directory minus the '.html' suffix and with '_spec.js' appended", function(){
+        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/path/fixtures/path/to/current_file.html");
+        expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal, "path/to/current_file_spec.js");
       });
     });
     

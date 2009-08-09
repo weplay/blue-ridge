@@ -6,28 +6,14 @@ Screw.Unit(function() {
   describe("BlueRidge.CommandLine", function(){
     
     describe("fixtureFile", function(){
-      describe("given a spec filename without a path prefix", function(){
-        it("returns the filename converted from a '_spec.js' suffix to '.html'", function(){
-          BlueRidge.CommandLine.specFile = 'some_spec.js' 
-          expect(BlueRidge.CommandLine.fixtureFile).to(match, /some\.html$/);
-        });
-
-        it("returns the filename prepended with 'fixtures/'", function(){
-          BlueRidge.CommandLine.specFile = 'some_spec.js'
-          expect(BlueRidge.CommandLine.fixtureFile).to(match, /^fixtures\/some/);
-        });
+      it("returns the filename converted from a '_spec.js' suffix to '.html'", function(){
+        BlueRidge.CommandLine.specFile = 'some/path/to/a_spec.js' 
+        expect(BlueRidge.CommandLine.fixtureFile).to(match, /a\.html$/);
       });
-      
-      describe("given a spec filename with a path prefix", function(){
-        it("returns the filename converted from a '_spec.js' suffix to '.html'", function(){
-          BlueRidge.CommandLine.specFile = 'some/path/to/some_spec.js'
-          expect(BlueRidge.CommandLine.fixtureFile).to(match, /some\.html$/);
-        });
 
-        it("returns the filename prepended with the spec's parent path and '/fixtures/'", function(){
-          BlueRidge.CommandLine.specFile = 'some/path/to/some_spec.js'
-          expect(BlueRidge.CommandLine.fixtureFile).to(match, /^some\/path\/to\/fixtures\/some/);
-        });
+      it("returns the filename prepended with 'fixtures/'", function(){
+        BlueRidge.CommandLine.specFile = 'some/path/to/a_spec.js'
+        expect(BlueRidge.CommandLine.fixtureFile).to(match, /^fixtures\/some\/path\/to\/a/);
       });
     });
     
