@@ -41,6 +41,7 @@ Screw.Unit(function() {
       });
     });
 
+    //TODO split most of these tests out into tests for the treatUrlAsRelativeTo* functions
     describe("require", function(){
       describe("correctly alters the incoming URL based on the current file's relation to the 'fixtures' directory", function(){
         describe("when requiring a BlueRidge dependency", function(){
