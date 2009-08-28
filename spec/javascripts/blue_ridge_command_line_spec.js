@@ -4,6 +4,7 @@ require("../../lib/test_runner.js");
 //TODO: get Smoke to where I can just stub all the assigmnents to BlueRidge.CommandLine.specFile below.
 Screw.Unit(function() {
   describe("BlueRidge.CommandLine", function(){
+    after(function(){ teardownFixtures() });
     
     describe("fixtureFile", function(){
       it("returns the filename converted from a '_spec.js' suffix to '.html'", function(){
@@ -77,42 +78,40 @@ Screw.Unit(function() {
     });
     
     describe("exampleName", function(){
-      after(function(){ teardownFixtures() });
-
-      function createDescribeDiv(name){
-        return $('<li class="describe"/>').append('<h1>' + name + '</h1>');
-      }
-
-      function createNestedDescribeDiv(name, body, count){
-        if(count == 1) {
-          return createDescribeDiv(name + " " + count).append(body);
-        }
-        else {
-          var div = createDescribeDiv(name + " " + count);
-          div.append(createNestedDescribeDiv(name, body, count-1));
-          return div;
-        }
-      }
-
-      describe("returning the human-readable name of the example for the given 'it' element", function(){
-        it("when the element is inside one describe", function(){
-          fixture(createDescribeDiv("describe")
-            .append($('<ul class="its"/>')
-              .append('<li class="it" id="sample-it"><h2>example</h2></li>')));
-        
-          expect(BlueRidge.CommandLine.exampleName("#sample-it")).to(equal, "describe example");
-        });
-        
-        it("when the element is inside several nested describes", function(){
-          var body = $('<ul class="its"/>').append('<li class="it" id="sample-it"><h2>example</h2></li>');
-          var dom = createNestedDescribeDiv("describe", body, 7);
-          fixture(dom);
-          
-          expect(BlueRidge.CommandLine.exampleName("#sample-it")).to(equal, "describe 7 describe 6 describe 5 describe 4 describe 3 describe 2 describe 1 example");
-        });
-        
+      it("returns the context name plus the example name for the given 'it' block when there is only one parent describe block", function(){
+        fixture(createDescribeDiv("describe")
+          .append($('<ul class="its"/>')
+            .append('<li class="it" id="sample-it"><h2>example</h2></li>')));
+      
+        expect(BlueRidge.CommandLine.exampleName("#sample-it")).to(equal, "describe example");
       });
       
+      it("returns the outer-most to inner-most context name plus the example name for the given 'it' block when it is inside several nested describes", function(){
+        var body = $('<ul class="its"/>').append('<li class="it" id="sample-it"><h2>example</h2></li>');
+        var dom = createNestedDescribeDiv("describe", body, 3);
+        fixture(dom);
+        
+        expect(BlueRidge.CommandLine.exampleName("#sample-it")).to(equal, "describe 3 describe 2 describe 1 example");
+      });
+    });
+    
+    describe("contextNamesForExample", function(){
+      it("returns an array with the context name for the given 'it' block when there is only one parent describe block", function(){
+        fixture(createDescribeDiv("describe")
+          .append($('<ul class="its"/>')
+            .append('<li class="it" id="sample-it"><h2>example</h2></li>')));
+      
+        expect(BlueRidge.CommandLine.contextNamesForExample("#sample-it")).to(equal, ["describe"]);
+      });
+      
+      it("returns an array of context names, sorted from outer-most to inner-most, when the given 'it' block is inside several nested describes", function(){
+        var body = $('<ul class="its"/>').append('<li class="it" id="sample-it"><h2>example</h2></li>');
+        var dom = createNestedDescribeDiv("describe", body, 3);
+        fixture(dom);
+        
+        var expected = ["describe 3", "describe 2", "describe 1"];
+        expect(BlueRidge.CommandLine.contextNamesForExample("#sample-it")).to(equal, expected);
+      });
     });
   });
 });
