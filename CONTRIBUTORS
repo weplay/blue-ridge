@@ -16,3 +16,5 @@ Contributors
 * Matt Wilson (hypomodern)
   - Although we didn't use his patch directly, his ideas were a *great* help in
     the "deeply-nested test directories" feature.  Thanks! 
+* Nick Stenning (nickstenning)
+  - For reminding us to add descriptions to our Rake tasks!
