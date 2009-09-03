@@ -1,3 +1,5 @@
+require "rubygems"
+gem "spicycode-micronaut", ">= 0.2.4"
 require "micronaut"
 
 def not_in_editor?
