@@ -4,9 +4,48 @@ require("../../lib/blue-ridge.js");
 Screw.Unit(function() {
   describe("BlueRidge.Browser", function(){
     describe("deriveSpecNameFromCurrentFile", function(){
-      it("returns the current file's patch from the fixtures directory minus the '.html' suffix and with '_spec.js' appended", function(){
-        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/path/fixtures/path/to/current_file.html");
-        expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal, "path/to/current_file_spec.js");
+      describe("behavior without spec parameter to fixture file name",
+               function(){
+        it("returns the current file's path from the fixtures directory minus the '.html' suffix and with '_spec.js' appended", function(){
+          stub(BlueRidge.Browser, 'currentLocation').and_return("/some/prefix/path/fixtures/path/to/current_file.html");
+          expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal, "path/to/current_file_spec.js");
+        });
+      });
+
+      describe("behavior with spec parameter at end of fixture file name",
+               function(){
+        it("returns current URL's 'search' string with '_spec.js' appended",
+           function(){
+          stub(BlueRidge.Browser, 'currentLocation').and_return(
+            "file:///home/some-project/test/javascript/fixtures/" +
+            "blue_ridge.html?blue_ridge_browser");
+          expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal,
+"file:///home/some-project/test/javascript/blue_ridge_browser_spec.js");
+        });
+
+        it("returns spec file name when current file path is relative",
+           function(){
+          stub(BlueRidge.Browser, 'currentLocation').and_return(
+            "javascript/fixtures/generic.html?generic_js_features_42");
+          expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal,
+            "javascript/generic_js_features_42_spec.js");
+        });
+
+        it("returns spec file name when no path info in current location",
+           function(){
+          stub(BlueRidge.Browser, 'currentLocation').and_return(
+            "generic.html?module/generic_test_of_modules_features");
+          expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal,
+            "module/generic_test_of_modules_features_spec.js");
+        });
+
+        it("returns spec file name when current file fetched via HTTP",
+           function(){
+          stub(BlueRidge.Browser, 'currentLocation').and_return(
+            "http://my.site.tld/test/fixtures/blue_ridge.html?web_based_test");
+          expect(BlueRidge.Browser.deriveSpecNameFromCurrentFile()).to(equal,
+            "http://my.site.tld/test/web_based_test_spec.js");
+        });
       });
     });
     
@@ -26,17 +65,17 @@ Screw.Unit(function() {
     
     describe("calculateDepth", function(){
       it("returns 1 if the current file is a direct child of the 'fixtures' directory", function(){
-        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/current_file.html");
+        stub(BlueRidge.Browser, 'currentLocation').and_return("/some/prefix/fixtures/current_file.html");
         expect(BlueRidge.Browser.calculateDepth()).to(equal, 1);
       });
 
       it("returns 2 if the current file is in a subdirectory ONE level beneath the 'fixtures' directory", function(){
-        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/subdirectory/current_file.html");
+        stub(BlueRidge.Browser, 'currentLocation').and_return("/some/prefix/fixtures/subdirectory/current_file.html");
         expect(BlueRidge.Browser.calculateDepth()).to(equal, 2);
       });
 
       it("returns 8 if the current file is in a subdirectory SEVEN levels beneath the 'fixtures' directory", function(){
-        stub(BlueRidge.Browser, 'currentFile').and_return("/some/prefix/fixtures/1/2/3/4/5/6/7/current_file.html");
+        stub(BlueRidge.Browser, 'currentLocation').and_return("/some/prefix/fixtures/1/2/3/4/5/6/7/current_file.html");
         expect(BlueRidge.Browser.calculateDepth()).to(equal, 8);
       });
     });
@@ -46,19 +85,19 @@ Screw.Unit(function() {
       describe("correctly alters the incoming URL based on the current file's relation to the 'fixtures' directory", function(){
         describe("when requiring a BlueRidge dependency", function(){
           it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("some_file.js", {system: true});
           });
           
           it("prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/foo/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/foo/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("some_file.js", {system: true});
           });
 
           it("prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("some_file.js", {system: true});
           });
@@ -66,19 +105,19 @@ Screw.Unit(function() {
         
         describe("when requiring a spec dependency", function(){
           it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("some_file.js");
           });
           
           it("pops off one '../' and then prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/foo/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/foo/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("../some_file.js");
           });
 
           it("pops off seven '../' and then prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentFile').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
+            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("../../../../../../../some_file.js");
           });

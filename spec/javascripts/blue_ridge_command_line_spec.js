@@ -16,6 +16,30 @@ Screw.Unit(function() {
         BlueRidge.CommandLine.specFile = 'some/path/to/a_spec.js'
         expect(BlueRidge.CommandLine.fixtureFile).to(match, /^fixtures\/some\/path\/to\/a/);
       });
+
+      it("finds a fixture file matching exactly one spec", function(){
+        BlueRidge.CommandLine.specFile =
+          'fixture_tests/exact_fixture_file_match_spec.js';
+        expect(BlueRidge.CommandLine.fixtureFile).to(match,
+          /^fixtures\/fixture_tests\/exact_fixture_file_match\.html/);
+      });
+
+      it("finds a broadly-shared fixture file", function(){
+        BlueRidge.CommandLine.specFile =
+          'fixture_tests/generic_fixture_using_test_spec.js';
+        expect(BlueRidge.CommandLine.fixtureFile).to(match,
+          /^fixtures\/fixture_tests\/generic\.html/);
+      });
+
+      it("finds the most specific shared fixture file available", function(){
+        BlueRidge.CommandLine.specFile =
+          'fixture_tests/generic_partial_match_fixture_test_spec.js';
+        expect(BlueRidge.CommandLine.fixtureFile).to(match,
+          /^fixtures\/fixture_tests\/generic_partial_match\.html/);
+      });
+
+      //TODO: ought to have a test for finding "fixture.html", but would
+      // need another test-execution directory and change to Rake file....
     });
     
     describe("specDirname", function(){
