@@ -72,14 +72,6 @@ describe BlueRidge do
     end
   end
 
-  describe "running a specific spec" do
-    it "runs the test runner command against the given spec filename in a separate process" do
-      BlueRidge.stubs(:test_runner_command).returns("some_test_runner_command")
-      BlueRidge.expects(:system).with("some_test_runner_command some_spec_file").returns(:some_value)
-      BlueRidge.run_spec("some_spec_file").should == :some_value
-    end
-  end
-
   describe "runing all specs under a given directory" do
     it "changes the current working directory to the given directory" do
       Dir.expects(:chdir).with("some_directory")
@@ -87,67 +79,58 @@ describe BlueRidge do
     end
 
     it "runs the specs passing in the given spec name" do
+      name = "some_spec_name"
       Dir.stubs(:chdir).yields
-      BlueRidge.expects(:run_specs).with("some_spec_name")
-      BlueRidge.run_specs_in_dir("some_directory", "some_spec_name")
+      BlueRidge.expects(:run_test_command).with(
+        regexp_matches(/#{name}_spec\.js$/))
+      BlueRidge.run_specs_in_dir("some_directory", name)
     end
 
-    it "returns the result of the running the specs" do
+    it "returns the result of passing specs" do
       Dir.stubs(:chdir).yields
-      BlueRidge.stubs(:run_specs).returns(:some_value)
-      BlueRidge.run_specs_in_dir("some_directory").should == :some_value
+      BlueRidge.stubs(:run_test_command).returns(true)
+      BlueRidge.run_specs_in_dir("some_directory").should == true
+    end
+
+    it "returns the result of failing specs" do
+      Dir.stubs(:chdir).yields
+      BlueRidge.stubs(:run_test_command).returns(false)
+      BlueRidge.run_specs_in_dir("some_directory").should == false
     end
   end
   
   describe "running specs under the current directory" do
     describe "when the given spec filename is nil" do
       it "calls run_spec for each '*_spec.js' file under the current directory" do
-        BlueRidge.stubs(:find_specs_under_current_dir).returns(["first_js_spec.js", "second_js_spec.js"])
-        BlueRidge.expects(:run_spec).with("first_js_spec.js")
-        BlueRidge.expects(:run_spec).with("second_js_spec.js")
+        BlueRidge.stubs(:find_specs_under_current_dir).returns(
+          ["first_js_spec.js", "second_js_spec.js"] )
+        BlueRidge.expects(:run_test_command).with(regexp_matches(
+          /first_js_spec\.js.*second_js_spec\.js/));
         BlueRidge.run_specs
-      end
-  
-      it "calls run_spec for each of the spec files, even if an early one reports a failure" do
-        BlueRidge.stubs(:find_specs_under_current_dir).returns(["first_js_spec.js", "second_js_spec.js"])
-        BlueRidge.expects(:run_spec).with("first_js_spec.js").returns(false)
-        BlueRidge.expects(:run_spec).with("second_js_spec.js")
-        BlueRidge.run_specs
-      end
-  
-      it "returns false if ANY of the specs reports a failure" do
-        BlueRidge.stubs(:find_specs_under_current_dir).returns(["first_js_spec.js", "second_js_spec.js"])
-        BlueRidge.stubs(:run_spec).with("first_js_spec.js").returns(false)
-        BlueRidge.stubs(:run_spec).with("second_js_spec.js").returns(true)
-        BlueRidge.run_specs.should == false
-      end
-  
-      it "returns true if ALL of the specs reports success" do
-        BlueRidge.stubs(:find_specs_under_current_dir).returns(["first_js_spec.js", "second_js_spec.js"])
-        BlueRidge.stubs(:run_spec).returns(true)
-        BlueRidge.run_specs.should == true
       end
     end
-  
+
     describe "when given a spec name" do
       it "runs only the single spec and does not look for other specs" do
         BlueRidge.expects(:find_specs_under_current_dir).never
-        BlueRidge.expects(:run_spec).once
+        BlueRidge.expects(:run_test_command).with(regexp_matches(
+          /^some_filename_spec\.js$/));
         BlueRidge.run_specs("some_filename")
       end
 
       it "runs the corresponding spec file for the given spec name" do
-        BlueRidge.expects(:run_spec).with("some_filename_spec.js").returns(true)
+        BlueRidge.expects(:run_test_command).with("some_filename_spec.js").
+          returns(true)
         BlueRidge.run_specs("some_filename").should == true
       end
 
       it "returns true if the spec reports success" do
-        BlueRidge.stubs(:run_spec).returns(true)
+        BlueRidge.stubs(:run_test_command).returns(true)
         BlueRidge.run_specs("some_filename").should == true
       end
     
       it "returns false if the spec reports a failure" do
-        BlueRidge.stubs(:run_spec).returns(false)
+        BlueRidge.stubs(:run_test_command).returns(false)
         BlueRidge.run_specs("some_filename").should == false
       end
     end
