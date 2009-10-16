@@ -7,13 +7,16 @@ module BlueRidge
     enable :logging
 
     get '/' do
-      %q{
-        <ul>
-          <li><a href="/fixtures/project.html">project</a></li>
-          <li><a href="/fixtures/foo/nested_project.html">foo/nested_project</a></li>
-          <li><a href="/fixtures/foo/bar/doubly-nested_project.html">foo/bar/doubly-nested_project</a></li>          
-        </ul>
-      }
+      spec_files = Dir.glob(BlueRidge.javascript_spec_dir + "/**/*.js")
+      spec_files = spec_files.reject {|spec_file| spec_file =~ /spec_helper.js$/ }
+      spec_files = spec_files.map {|spec_file| spec_file.gsub(BlueRidge.javascript_spec_dir + "/", "") }
+      spec_files = spec_files.map {|spec_file| spec_file.gsub("_spec.js", ".html") }
+
+      output = "<ul>"
+      spec_files.each do |spec_file|
+        output += %Q{<li><a href="/fixtures/#{spec_file}">#{spec_file}</a></li>}
+      end
+      output += "</ul>"
     end
     
     # TODO: change "fixtures" to "spec" long-term
