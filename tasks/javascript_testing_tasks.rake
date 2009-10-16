@@ -51,4 +51,10 @@ namespace :js do
     rlwrap = `which rlwrap`.chomp
     system("#{rlwrap} #{BlueRidge.rhino_command} -f #{BlueRidge.plugin_prefix}/lib/shell.js -f -")
   end
+  
+  # TODO: REMOVE ME! I'm just a work-in-progress, and I should be a ./script/jsserver script instead
+  task :server do
+    require File.expand_path(File.dirname(__FILE__) + '/../lib/blue_ridge/server')
+    BlueRidge::Server.run!
+  end
 end
