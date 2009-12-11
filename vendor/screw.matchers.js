@@ -112,7 +112,7 @@ Screw.Matchers = (function($) {
       },
 
       failure_message: function(expected, actual, not) {
-        return 'expected ' + $.print(actual) + (not ? ' to not' : ' to') + ' have length ' + expected;
+        return 'expected ' + $.print(actual) + (not ? ' to not' : ' to') + ' have length ' + expected + ' but got ' + actual.length;
       }
     },
 
