@@ -80,58 +80,27 @@ Screw.Unit(function() {
       });
     });
 
-    //TODO split most of these tests out into tests for the treatUrlAsRelativeTo* functions
     describe("require", function(){
       describe("correctly alters the incoming URL based on the current file's relation to the 'fixtures' directory", function(){
         describe("when requiring a BlueRidge dependency", function(){
           it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
             stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
-            BlueRidge.Browser.require("some_file.js", {system: true});
+            BlueRidge.Browser.require("some_file.js");
           });
           
           it("prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
             stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/foo/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
-            BlueRidge.Browser.require("some_file.js", {system: true});
+            BlueRidge.Browser.require("some_file.js");
           });
 
           it("prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
             stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
             mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
-            BlueRidge.Browser.require("some_file.js", {system: true});
-          });
-        });
-        
-        describe("when requiring a spec dependency", function(){
-          it("prepends a single '../' if the current file is directly in the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/current_file.html");
-            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../some_file.js", null).at_least(1, "time");
             BlueRidge.Browser.require("some_file.js");
           });
-          
-          it("pops off one '../' and then prepends two '../' if the current file is in a subdirectory directly beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/foo/current_file.html");
-            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../some_file.js", null).at_least(1, "time");
-            BlueRidge.Browser.require("../some_file.js");
-          });
-
-          it("pops off seven '../' and then prepends eight '../' if the current file is in a subdirectory nested seven-directories beneath the 'fixtures' directory", function(){
-            stub(BlueRidge.Browser, 'currentLocation').and_return("/ignored/fixtures/1/2/3/4/5/6/7/current_file.html");
-            mock(BlueRidge.Browser).should_receive("createScriptTag").with_arguments("../../../../../../../../some_file.js", null).at_least(1, "time");
-            BlueRidge.Browser.require("../../../../../../../some_file.js");
-          });
         });
-      });
-      
-      describe("loadFile", function() {
-        it("should load contents of valid file", function() {
-          expect(BlueRidge.Browser.loadFile("partials/foobar.html")).to(equal, "<p>foobar</p>");
-        });
-        it("should log error message if file not found", function() {
-          mock(BlueRidge.Browser).should_receive("debug").with_arguments("File file/does/not/exist.html not found").exactly(1, "time");
-          BlueRidge.Browser.loadFile("file/does/not/exist.html");
-        })
       });
 
       // TODO: note, these tests conflict with the ones above because Smoke doesn't reset its stubs back to their "natural" values;
