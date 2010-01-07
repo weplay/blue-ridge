@@ -112,5 +112,10 @@ Screw.Unit(function() {
       //   BlueRidge.Browser.require("some_url");
       // });
     });
+    describe("loadFile", function() {
+      it("should load contents of valid file", function() {
+        expect(BlueRidge.Browser.loadFile("fixtures/partials/foobar.html")).to(equal, "<p>foobar</p>");
+      });
+    });
   });
 });
