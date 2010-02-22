@@ -84,6 +84,16 @@ Screw.Unit(function() {
           });
         });
       });
+      
+      describe("loadFile", function() {
+        it("should load contents of valid file", function() {
+          expect(BlueRidge.Browser.loadFile("partials/foobar.html")).to(equal, "<p>foobar</p>");
+        });
+        it("should log error message if file not found", function() {
+          mock(BlueRidge.Browser).should_receive("debug").with_arguments("File file/does/not/exist.html not found").exactly(1, "time");
+          BlueRidge.Browser.loadFile("file/does/not/exist.html");
+        })
+      });
 
       // TODO: note, these tests conflict with the ones above because Smoke doesn't reset its stubs back to their "natural" values;
       // need to improve Smoke to be more forgiving on stubbing global objects
